@@ -20,7 +20,7 @@ shell> git clone https://github.com/gaoermai/ThinkPHPUnit.git
     
         protected $_message_render = self::MESSAGE_RENDER_ECHO;
     
-        public function testExample() {
+        protected function _testExample() {
             $this->assertLessThan(1, 2, '可以使用中文作为错误提示');
             $this->assertLessThan(2, 1);
             $this->assertContainsOnly('string', array('1', '2', 3));
@@ -46,7 +46,7 @@ shell> git clone https://github.com/gaoermai/ThinkPHPUnit.git
 
 ##使用帮助
 
-### 创建测试用例Action
+###创建测试用例Action
 ThinkPHPUnit需要独立的Action文件，继承ThinkPHPUnitAction类。
 
 类似这样：
@@ -54,11 +54,10 @@ ThinkPHPUnit需要独立的Action文件，继承ThinkPHPUnitAction类。
 class TestAction extends ThinkPHPUnitAction {}
 ```
 
-类中的方法，只有以 **test** 开头的方法，才会被认为是包含测试用例的可执行的测试方法。
-通过URL访问查看测试用例的执行结果，无需逐一访问每个方法， **ThinkPHPUnitAction::index()** 能够自动地逐一运行每个以*test*开头的方法并返回结果。
+类中的方法，只有类似 **public testFuncName()** 或者 **protected _testFuncName()** 这样命名的，才会被认为是包含测试用例的测试方法。 **ThinkPHPUnitAction::index()** 能够自动地逐一执行这些方法并返回结果。
 
 
-### 使用哪种断言错误记录方式
+###使用哪种断言错误记录方式
 
 定义记录错误的方式使用下面代码：
     
@@ -79,3 +78,27 @@ ThinkPHPUnit支持4种断言错误输出常量：
 如果是生产环境，那么建议：
 * 如果有安全屏蔽测试用的Action，那么仍然可以采用 **ThinkPHPUnitAction::MESSAGE_RENDER_ECHO** 方式；
 * 如果没有，那么建议采用 **ThinkPHPUnitAction::MESSAGE_RENDER_ERROR_LOG** 。
+
+###生产环境部署须知
+
+在生产环境中，为了限制普通用户访问测试用例，可以采用以下几种安全措施。
+
+####设置HTTP Authentication
+
+HTTP Authentication是一种HTTP基础的用户名密码验证方式。从ThinkPHPUnit v0.2版本开始，内置了这种验证方式。配置方法：
+    
+    class TestAction extends ThinkPHPUnitAction {
+    
+        protected $_http_auth_username = 'YOUR USERNAME HERE';
+        protected $_http_auth_password = 'YOUR PASSWORD HERE';
+    }
+
+为安全起见，建议将用户名和密码都设置成超过16位的大小写数字混合的字符串形式。
+
+####采用随机的Action名
+
+不采用常见的如 **TestAction** 这样的名称，能够有效的避免非法用户猜测测试用例的网址。
+
+####在Web服务器上限定IP等措施
+
+更加安全的做法，可以在Web服务（如Apache、Nginx）上，对测试用例所在的网址进行IP过滤等。这些方法属于Web服务的讨论范围，请阅读相关文档。
