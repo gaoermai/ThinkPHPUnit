@@ -77,4 +77,4 @@ ThinkPHPUnit支持4种断言错误输出常量：
 在测试环境中，推荐使用**ThinkPHPUnitAction::MESSAGE_RENDER_ECHO** 方式输出错误。
 如果是生产环境，那么建议：
 * 如果有安全屏蔽测试用的Action，那么仍然可以采用 **ThinkPHPUnitAction::MESSAGE_RENDER_ECHO** 方式；
-* 如果没有，那么建议采用**ThinkPHPUnitAction::MESSAGE_RENDER_ERROR_LOG** 。
+* 如果没有，那么建议采用 **ThinkPHPUnitAction::MESSAGE_RENDER_ERROR_LOG** 。
