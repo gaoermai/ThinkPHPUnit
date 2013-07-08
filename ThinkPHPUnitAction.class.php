@@ -20,9 +20,28 @@ abstract class ThinkPHPUnitAction extends Action {
 	
 	protected $_message_render = 0;
 	
+	/**
+	 * 断言错误时以使用抛出异常
+	 * @var int
+	 */
 	const MESSAGE_RENDER_EXCEPTION = 0;
+	
+	/**
+	 * 断言错误时以PHP日志方式记录错误
+	 * @var int
+	 */
 	const MESSAGE_RENDER_ERROR_LOG = 1;
+	
+	/**
+	 * 断言错误时以使用var_dump()函数输出
+	 * @var int
+	 */
 	const MESSAGE_RENDER_VARDUMP   = 2;
+	
+	/**
+	 * 断言错误时以使用文本输出方式（推荐）
+	 * @var int
+	 */
 	const MESSAGE_RENDER_ECHO      = 3;
 	
 	/**
