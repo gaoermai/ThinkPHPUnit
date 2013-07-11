@@ -79,6 +79,35 @@ ThinkPHPUnit支持4种断言错误输出常量：
 * 如果有安全屏蔽测试用的Action，那么仍然可以采用 **ThinkPHPUnitAction::MESSAGE_RENDER_ECHO** 方式；
 * 如果没有，那么建议采用 **ThinkPHPUnitAction::MESSAGE_RENDER_ERROR_LOG** 。
 
+###如何测试异常？
+
+在[PHPUnit](http://phpunit.de/manual/current/en/writing-tests-for-phpunit.html#writing-tests-for-phpunit.exceptions)的官方文档中，有描述通过类似下面的注释代码来测试异常：
+```
+class ExceptionTest extends PHPUnit_Framework_TestCase
+{
+    /**
+     * @expectedException InvalidArgumentException
+     */
+    public function testException()
+    {
+    }
+}
+```
+
+但是，在Web环境中，是没有办法通过注释标注的方式来测试异常的。从ThinkPHPUnit v0.2版本开始，提供了新的方法来对异常进行输出：
+```
+	protected function _testException() {
+		try {
+			throw new InvalidArgumentException();
+		}catch (InvalidArgumentException) {
+		    
+		}catch (Exception $e) {
+			$this->render_exception($e);
+		}
+	}
+```
+使用这种方法，可以输出预期异常并输出。
+
 ###生产环境部署须知
 
 在生产环境中，为了限制普通用户访问测试用例，可以采用以下几种安全措施。
@@ -94,6 +123,8 @@ HTTP Authentication是一种HTTP基础的用户名密码验证方式。从ThinkP
     }
 
 为安全起见，建议将用户名和密码都设置成超过16位的大小写数字混合的字符串形式。
+
+默认的，当常量 **APP_DEBUG** 为true时，HTTP验证不开启。
 
 ####采用随机的Action名
 

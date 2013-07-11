@@ -129,6 +129,61 @@ DATA;
     {
         var_dump($trace);
     }
+    
+    public function render_exception($e, $custom_message=null)
+    {
+        if (is_a($e, 'PHPUnit_Framework_ExpectationFailedException')) {
+            $this_action_class_name = get_class($this);
+            
+            $action_trace = null;
+            $assert_trace = null;
+            foreach ($e->getTrace() as $trace) {
+                if ($trace['class'] == $this_action_class_name) {
+                    $action_trace = $trace;
+                }elseif ('ThinkPHPUnitAction' == $trace['class'] && '__call' == $trace['function']) {
+                    $assert_trace = $trace;
+                }
+            }
+            
+            $test_trace = array(
+                'message' => $custom_message ? $custom_message : $e->toString(),
+                'method'  => $action_trace['function'],
+                'class'   => $action_trace['class'],
+                'line'    => $assert_trace['line'],
+            );
+        }else {
+            $traces = $e->getTrace();
+            $first_trace = array_shift($traces);
+            
+            $this_action_class_name = get_class($this);
+            
+            $action_trace = null;
+            foreach ($e->getTrace() as $trace) {
+                if ($trace['class'] == $this_action_class_name) {
+                    $action_trace = $trace;
+                }
+            }
+            
+            if (is_callable(array($e, 'toString'))) {
+                $e_message = $e->toString();
+            }else {
+                $e_message = $e->getMessage();
+            }
+            
+            $message = '';
+            if ($custom_message) {
+                $message .= "{$custom_message}\n";
+            }
+            $message .= "(".get_class($e)."){$e_message}";
+            $test_trace = array(
+                'message' => $message,
+                'method'  => $action_trace['function'],
+                'class'   => $action_trace['class'],
+                'line'    => $first_trace['line'],
+            );
+        }
+        $this->__render($test_trace);
+    }
 
     public function __call($method, $args)
     {
@@ -136,28 +191,7 @@ DATA;
             try {
                 call_user_method_array($method, $this->__phpunit_framework_testcase, $args);
             }catch (PHPUnit_Framework_ExpectationFailedException $e) {
-                $this_action_class_name = get_class($this);
-                
-                $action_trace = null;
-                $assert_trace = null;
-                foreach ($e->getTrace() as $trace) {
-                    if ($trace['class'] == $this_action_class_name) {
-                        if ($method == $trace['function']) {
-                            $assert_trace = $trace;
-                        }else {
-                            $action_trace = $trace;
-                        }
-                    }
-                }
-                
-                $test_trace = array(
-                    'message' => $e->toString(),
-                    'method'  => $action_trace['function'],
-                    'class'   => $action_trace['class'],
-                    'line'    => $assert_trace['line'],
-                );
-                
-                $this->__render($test_trace);
+                $test_trace = $this->render_exception($e);
             }
         }else {
             $this->__phpunit_framework_testcase->$method($args[0]);
