@@ -229,4 +229,51 @@ DATA;
             }
         }
     }
+	
+    /**
+     * 远程请求某个网址
+     * 
+     * 基于WEB的测试，常常需要获取远程页面。
+     * 本方法提供了相应的方法。
+     * 其中，指定IP可以使用在如测试CDN源站等场景中。
+     * 
+     * @param string $url
+     * @param string $ip
+     * @param string|array $post
+     * @return mixed
+     */
+	protected function _request($url, $ip=null, $post=null)
+	{
+		$ch = curl_init();
+		if (!is_null($ip)) {
+			$urldata = parse_url($url);
+			if (empty($urldata['path'])) $urldata['path'] = '';
+			if (!empty($urldata['query'])) $urldata['path'] .= "?".$urldata['query'];
+			$headers = array("Host: " . $urldata['host']);
+			curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+			$url = $urldata['scheme']."://".$ip.$urldata['path'];
+		}
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_HEADER, 0);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
+		curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+
+		curl_setopt($ch, CURLOPT_USERAGENT, "PHPUnit");
+		
+		if (!empty($post)) {
+			curl_setopt($ch, CURLOPT_POST, 1);
+			if (is_string($post)) {
+				curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
+			}elseif (is_array($post)) {
+				$post_str = http_build_query($post, '', '&');
+				curl_setopt($ch, CURLOPT_POSTFIELDS, $post_str);
+			}
+		}
+
+		$response = curl_exec($ch);
+		curl_close($ch);
+		return $response;
+	}
 }
